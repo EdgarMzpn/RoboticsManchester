@@ -44,7 +44,7 @@ class puzzlebot:
         self.linear_threshold_reached = False
 
         # Initialize PID controller gains and integrals
-        self.kp_angular = 0.54
+        self.kp_angular = 0.788492956392039 
         self.kp_linear = 0.34
         self.ki_angular = 0.0
         self.integral_angular = 0.0
@@ -119,7 +119,7 @@ class puzzlebot:
             self.theta_k = self.wrapTheta(self.theta_k)
             self.x_k = self.x_k + (self.r*(self.wr + self.wl) /2) * self.dt * np.cos(self.theta_k)
             self.y_k = self.y_k + (self.r*(self.wr + self.wl) /2) * self.dt * np.sin(self.theta_k)
-
+            
             self.error_theta = (np.arctan2(self.target_y - self.y_k, self.target_x - self.x_k)) - self.theta_k
             self.error_d = np.sqrt((self.target_x-self.x_k)**2 + (self.target_y-self.y_k)**2)
             self.error_theta = self.wrapTheta(self.error_theta)
@@ -131,17 +131,18 @@ class puzzlebot:
              # Control logic for robot movement
         
             # If the angular error is greater than a threshold and the angular threshold is not reached yet
-            if(np.rad2deg(abs(self.error_theta)) > 0.3 and self.angular_threshold_reached == False):
+            if(np.rad2deg(abs(self.error_theta)) > 0.01 and self.angular_threshold_reached == False):
                 self.speed.linear.x = 0.0
                 self.speed.angular.z = self.PID_Angular()
                 print("I'm moving angularly")
             
             # If the angular error is less than a threshold and the pause counter is less than 50 stop the robot
-            elif(np.rad2deg(abs(self.error_theta)) < 0.3 and self.pause < 50):
+            elif(np.rad2deg(abs(self.error_theta)) < 0.01):
                 self.pause += 1
-                self.angular_threshold_reached = True
-                self.speed.linear.x = 0.
-                self.speed.angular.z = 0.
+                if(self.pause == 50):
+                    self.angular_threshold_reached = True
+                    self.speed.linear.x = 0.
+                    self.speed.angular.z = 0.
 
             # If the linear error is greater than a threshold and the linear threshold is not reached yet
             elif(self.error_d > 0.1 and self.linear_threshold_reached == False):
@@ -149,8 +150,7 @@ class puzzlebot:
                 self.speed.angular.z = 0.
                 self.angular_threshold_reached = True
                 print("I'm moving linearly")
-                if(self.error_d > 4):
-                    self.linear_threshold_reached = True
+                self.linear_threshold_reached = True
 
             # If none of the above conditions are met, stop the robot and reset relevant variables   
             else:
