@@ -57,7 +57,7 @@ def blobs(val):
     params.filterByInertia = True
     params.minInertiaRatio = 0.6
 
-    detector = cv.SimpleBlobDetector_create()
+    detector = cv.SimpleBlobDetector_create(params)
 
     dilatation_dst = 255-dilatation_dst
     keypoints = detector.detect(dilatation_dst)
